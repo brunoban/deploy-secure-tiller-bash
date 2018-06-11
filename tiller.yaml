@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tiller-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller-user
+  namespace: tiller-system
+---
+# This role enables Tiller to read ConfigMaps on its own namespace
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tiller-manager
+  namespace: tiller-system
+rules:
+- apiGroups: ["", "extensions", "apps"]
+  resources: ["configmaps"]
+  verbs: ["*"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tiller-binding
+  namespace: tiller-system
+subjects:
+- kind: ServiceAccount
+  name: tiller-user
+  namespace: tiller-system
+roleRef:
+  kind: Role
+  name: tiller-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: tiller-cluster-rule
+subjects:
+- kind: ServiceAccount
+  name: tiller-user
+  namespace: tiller-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: ""
